@@ -2,12 +2,19 @@ import { RigidBody, useRapier } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
 import { useRef, useEffect, useState } from "react";
+import useGame from './stores/useGame.jsx'
 import * as THREE from 'three'
 
 export default function Player() {
   const body = useRef();
   const [subscribeKeys, getKeys] = useKeyboardControls();
   const { rapier, world } = useRapier();
+
+    //  ritriving game state
+  const start = useGame((state) => state.start)
+  const end = useGame((state) => state.end)
+  const blocksCount = useGame((state) => state.blockCount)
+  const restart = useGame((state) => state.restart)
 
   const [smoothCameraPosition] = useState(()=> new THREE.Vector3(10, 10, 10));
   const [smoothCameraTarget] = useState(()=> new THREE.Vector3());
@@ -21,12 +28,18 @@ export default function Player() {
     const ray = new rapier.Ray(origin, direction);
     const hit = world.castRay(ray, 10, true);
 
-    console.log(hit.timeOfImpact);
 
     if (hit.timeOfImpact < 0.15) {
       body.current.applyImpulse({ x: 0, y: 0.5, z: 0 });
     }
   };
+
+  const reset = () =>
+    {
+        body.current.setTranslation({ x: 0, y: 1, z: 0 })
+        body.current.setLinvel({ x: 0, y: 0, z: 0 })
+        body.current.setAngvel({ x: 0, y: 0, z: 0 })
+    }
 
   useEffect(() => {
     const unsubsricbeJump = subscribeKeys(
@@ -35,10 +48,28 @@ export default function Player() {
         if (value) jump();
       }
     );
+    const unsubscribeReset = useGame.subscribe(
+        (state) => state.phase,
+        (value) =>
+        {
+            if(value === 'ready')
+                reset()
+        }
+    )
+    const unsubscribeAny = subscribeKeys(
+        () =>
+        {
+            start()
+        }
+    )
     return () => {
       unsubsricbeJump();
+      unsubscribeAny();
+      unsubscribeReset()
     };
   }, []);
+
+
 
   useFrame((state, delta) => {
     const { forward, backward, leftward, rightward } = getKeys();
@@ -92,10 +123,20 @@ export default function Player() {
 
     state.camera.position.copy(smoothCameraPosition);
     state.camera.lookAt(smoothCameraTarget);
+
+    if(bodyPosition.z < - (blocksCount * 4 + 2)){
+        end()
+    }
+    if(bodyPosition.y < - 4){
+        restart()
+    }
   });
+
+
 
   return (
     <RigidBody
+    
       ref={body}
       canSleep={false}
       colliders="ball"

@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Float, Text } from '@react-three/drei';
 
 const boxGeometry = new THREE.BoxGeometry(1,1,1);
 
@@ -13,6 +13,20 @@ const wallMaterial = new THREE.MeshStandardMaterial({ color: 'slategrey' })
 
 export function BlockScope({position= [0, 0, 0]}){
     return <group position={position}>
+        <Float  floatIntensity={ 0.25 } rotationIntensity={ 0.25 }>
+            <Text
+              font="./bebas-neue-v9-latin-regular.woff"
+              scale={ 0.5 }
+              maxWidth={ 0.25 }
+              lineHeight={ 0.75 }
+              textAlign="right"
+              position={ [ 0.75, 0.65, 0 ] }
+              rotation-y={ - 0.25 }
+            > 
+            Marble Race
+            <meshBasicMaterial toneMapped={ false } />
+            </Text>
+        </Float>
         <mesh geometry={boxGeometry} material={floor1Material} position={[0, - 0.1, 0]} scale={[4, 0.2, 4]} receiveShadow />
       </group>   
 }
@@ -28,6 +42,14 @@ export function BlockEnd({position= [0, 0, 0]}){
 
         // console.log(useGLTF);
     return <group position={position}>
+          <Text
+            font="./bebas-neue-v9-latin-regular.woff"
+            scale={ 2.5 }
+            position={ [ 0, 2.75, 2 ] }
+        >
+            FINISH
+            <meshBasicMaterial toneMapped={ false } />
+        </Text>
         <mesh geometry={boxGeometry} material={floor1Material} position={[0, 0, 0]} scale={[4, 0.2, 4]} receiveShadow />
         <RigidBody type='fixed' colliders="hull" position={[0, 0.25, 0]} restitution={0.2} friction={0}>
 
@@ -148,7 +170,7 @@ function Bounds({length = 1}){
 }
 
 
-export function Level({ count = 5, types = [ BlockSpiner, BlockAxe, BlockLimbo ] }) {
+export function Level({ count = 5, types = [ BlockSpiner, BlockAxe, BlockLimbo ],   seed = 0 }) {
 
     const block = useMemo(()=>{
         const blocks = []
@@ -158,7 +180,7 @@ export function Level({ count = 5, types = [ BlockSpiner, BlockAxe, BlockLimbo ]
                 blocks.push(type)
             }
         return blocks
-    },[count, types])
+    },[count, types, seed ])
   return (  
     <>
        
