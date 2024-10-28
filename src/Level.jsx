@@ -23,7 +23,7 @@ export function BlockScope({position= [0, 0, 0]}){
               position={ [ 0.75, 0.65, 0 ] }
               rotation-y={ - 0.25 }
             > 
-            Marble Race Created
+            Marble Race
             <meshBasicMaterial toneMapped={ false } />
             </Text>
         </Float>
